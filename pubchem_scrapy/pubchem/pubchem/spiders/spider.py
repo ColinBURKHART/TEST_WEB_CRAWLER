@@ -9,5 +9,5 @@ class SpiderSpider(scrapy.Spider):
 
     def parse(self, response):
         print(response.status)
-        print(response.xpath('//div]'))
+        print(response.xpath('//div'))
 

@@ -15,7 +15,7 @@ driver = webdriver.Chrome(os.environ.get('CHROME_DRIVER_PATH'), options=chrome_o
 driver.get('https://pubchem.ncbi.nlm.nih.gov/#query=' + search_value)
 
 retry = 100
-delay = 10
+delay = 1
 
 n = 1
 
@@ -42,7 +42,7 @@ else:
 driver.get(next_url)
 
 retry = 100
-delay = 10
+delay = 1
 
 n = 1
 
