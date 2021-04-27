@@ -3,11 +3,15 @@ from selenium import webdriver
 import time
 import lxml
 import os
+from selenium.webdriver.chrome.options import Options
+
 
 # element cherché
 search_value = 'InChI=1S/C3H6O/c1-3(2)4/h1-2H3'
-
-driver = webdriver.Chrome(os.environ.get('CHROME_DRIVER_PATH'))
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+driver = webdriver.Chrome(os.environ.get('CHROME_DRIVER_PATH'), options=chrome_options)
+#driver = webdriver.Firefox()
 driver.get('https://pubchem.ncbi.nlm.nih.gov/#query=' + search_value)
 
 retry = 100
