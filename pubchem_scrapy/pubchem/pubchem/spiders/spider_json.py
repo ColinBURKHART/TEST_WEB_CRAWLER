@@ -1,12 +1,14 @@
 import scrapy
-from scrapy_selenium import SeleniumRequest
+import scra
+from scrapy_headless import SeleniumRequest
+import time
 
 
 class Spider(scrapy.Spider):
     name = "scrapy_selenium"
 
     def start_requests(self):
-        search_value = 'InChI=1S/C3H6O/c1-3(2)4/h1-2H3'
+        search_value = '57-27-2'
         start_url = "https://pubchem.ncbi.nlm.nih.gov/#query=" + search_value
         yield SeleniumRequest(
             url= start_url,
@@ -16,5 +18,10 @@ class Spider(scrapy.Spider):
             dont_filter=True
         )
 
-    def parse(self, response:
-        print(response.request.meta['driver'].title)
+    def parse(self, response):
+        time.sleep(10)
+        result = response.xpath('//*[@id="collection-results-container"]/div/div/div[1]/div/div[1]/div/div[1]/span')
+        print(result)
+
+
+

@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.options import Options
 
 
 # element cherché
-search_value = 'InChI=1S/C3H6O/c1-3(2)4/h1-2H3'
+search_value = '57-27-2'
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(os.environ.get('CHROME_DRIVER_PATH'), options=chrome_options)
@@ -59,6 +59,25 @@ while n < retry:
 
 get_NAME = soup.find('h1')
 
+value_CAS = soup.find('section', {'id': 'CAS'})
+get_CAS = value_CAS.find('div', {'class': 'section-content-item'})
+value = get_CAS.find('p')
+
+value_mol = soup.findAll('div', {'class': 'overflow-x-auto border'})
+get_molecularw = value_mol[1].find('tbody')
+get_molecular = get_molecularw.findAll('td')
+
+value_struc = soup.find('section', {'id': '2D-Structure'})
+get_struc = value_struc.find('div', {'class': 'relative structure-img-container'})
+get_struct = get_struc.find('img')
+get_structure = get_struct.get('src')
+
 print('Name= ' +get_NAME.text)
 print('CAS= ' +get_CAS.text)
-print('Molecular Formula= '+get_value[0].text + ', ' +get_value[1].text + ', ' + get_value[2].text + ', ' + get_value[3].text)
+if get_value is not list:
+    print('Molecular Formula= ' + get_value[0].text)
+else:
+    print('Molecular Formula= '+get_value[0].text + ', ' +get_value[1].text + ', ' + get_value[2].text + ', ' + get_value[3].text)
+print('MolarMass= ' + get_molecular[1].text)
+print('Structure= ' + get_structure)
+print('Synonyms=')
