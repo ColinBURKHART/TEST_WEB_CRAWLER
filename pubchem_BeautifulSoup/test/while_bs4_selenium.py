@@ -157,6 +157,41 @@ def get_properties(soup):
     ret = 'Density= ' + get_density(soup)  + ', Boiling Point= ' + get_boiling_point(soup) + ', Melting Point= ' + get_melting_point(soup) + ', Fusion Point= ' + get_fusion_point(soup)
     return ret
 
+def get_hazards_GHS(soup, driver, bs):
+    ret=''
+    number_H = soup.find('section', {'id': 'GHS-Classification'})
+    if number_H is not None:
+        get_url_H = number_H.find('a', {'class': 'button has-icon-right with-padding-small lh-1'})
+        if get_url_H is not None:
+           url_H  = get_url_H.get('href')
+           driver.get(url_H)
+           retry = 100
+           delay = 1
+           n = 1
+           while n < retry:
+               soup_hazards = bs(html, 'lxml')
+               hazards = soup_hazards.find('body')
+               if hazards is not None:
+                   hazards_GHS = hazards.find('title')
+                   ret = hazards_GHS
+                   break
+               else:
+                   n += 1
+               time.sleep(delay)
+        else :
+            GHS_alltr = number_H.findAll('tr')
+            for tr in GHS_alltr:
+                if 'GHS Hazard Statements' in tr.text:
+                    ret = tr.text
+    return ret
+
+
+
+def get_hazards(soup, driver, bs):
+    ret = 'GHS Hazard Statements= ' + get_hazards_GHS(soup, driver, bs)
+    return ret
+
+
 print('Name= ' + get_name(soup))
 print('CAS= ' + get_CAS(soup))
 print('Molecular Formula= ' + get_value[0].text)
@@ -165,4 +200,5 @@ print('Structure= ' + get_image_structure(soup))
 print('Synonyms= ' + get_synonyms(soup))
 print('Flash Point= ' + get_flash_point(soup))
 print('Properties: ' + get_properties(soup))
+print('Hazards: ' + get_hazards(soup, driver, bs))
 
