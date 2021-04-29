@@ -49,11 +49,9 @@ n = 1
 while n < retry:
      html = driver.page_source
      soup = bs(html, 'lxml')
-     value_SMILES = soup.find('section', {'id': 'Canonical-SMILES'})
-     if value_SMILES is not None:
-        get_value = value_SMILES.find('div', {'class': 'section-content-item'})
-        value_Canonical = get_value.find('p')
-#       print(value_Canonical.text)
+     value_Molecula = soup.find('section', {'id': 'Molecular-Formula'})
+     if value_Molecula is not None:
+        get_value = value_Molecula.findAll('p')
         break
      else:
         n += 1
@@ -61,25 +59,6 @@ while n < retry:
 
 get_NAME = soup.find('h1')
 
-value_Name = soup.find('section', {'id': 'IUPAC-Name'})
-get_value1 = value_Name.find('div', {'class': 'section-content-item'})
-value_IUPAC= get_value1.find('p')
-
-value_InCh = soup.find('section', {'id': 'InChI'})
-get_value2 = value_InCh.find('div', {'class': 'section-content-item'})
-value_InChI = get_value2.find('p')
-
-value_Inchik = soup.find('section', {'id': 'InChI-Key'})
-get_value3 = value_Inchik.find('div', {'class': 'section-content-item'})
-value_InChIK = get_value3.find('p')
-
-value_Molecula = soup.find('section', {'id': 'Molecular-Formula'})
-get_value4 = value_Molecula.findAll('p')
-
-
 print('Name= ' +get_NAME.text)
-print('IUPAC Name= '+value_IUPAC.text)
-print('InChl Name= '+value_InChI.text)
-print('InChl Key Name= '+value_InChIK.text)
-print('Canonical SMILES= '+value_Canonical.text)
-print('Molecular Formula= '+get_value4[0].text + ', ' +get_value4[1].text + ', ' + get_value4[2].text + ', ' + get_value4[3].text)
+print('CAS= ' +get_CAS.text)
+print('Molecular Formula= '+get_value[0].text + ', ' +get_value[1].text + ', ' + get_value[2].text + ', ' + get_value[3].text)
