@@ -5,7 +5,9 @@ import time
 import lxml
 import os
 from selenium.webdriver.chrome.options import Options
+from datetime import datetime
 
+Time = datetime.now()
 
 # element cherché
 # multiple Hazards 67-64-1
@@ -279,4 +281,4 @@ print('Synonyms= ' + get_synonyms(soup))
 print('Flash Point= ' + get_flash_point(soup))
 print('Properties: ' + get_properties(soup))
 print('Hazards= ' + get_hazards(soup))
-
+print(datetime.now() - Time)
