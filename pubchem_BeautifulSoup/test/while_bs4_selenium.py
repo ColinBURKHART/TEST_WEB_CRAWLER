@@ -8,7 +8,9 @@ from selenium.webdriver.chrome.options import Options
 
 
 # element cherché
-search_value = '57-27-2'
+# multiple Hazards 67-64-1
+# one hazards 57-27-2
+search_value = '67-64-1'
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(os.environ.get('CHROME_DRIVER_PATH'), options=chrome_options)
@@ -19,6 +21,7 @@ retry = 100
 delay = 1
 
 n = 1
+
 
 while n < retry:
      html = driver.page_source
@@ -157,38 +160,113 @@ def get_properties(soup):
     ret = 'Density= ' + get_density(soup)  + ', Boiling Point= ' + get_boiling_point(soup) + ', Melting Point= ' + get_melting_point(soup) + ', Fusion Point= ' + get_fusion_point(soup)
     return ret
 
-def get_hazards_GHS(soup, driver, bs):
-    ret=''
-    number_H = soup.find('section', {'id': 'GHS-Classification'})
-    if number_H is not None:
-        get_url_H = number_H.find('a', {'class': 'button has-icon-right with-padding-small lh-1'})
-        if get_url_H is not None:
-           url_H  = get_url_H.get('href')
-           driver.get(url_H)
-           retry = 100
-           delay = 1
-           n = 1
-           while n < retry:
-               soup_hazards = bs(html, 'lxml')
-               hazards = soup_hazards.find('body')
-               if hazards is not None:
-                   hazards_GHS = hazards.find('title')
-                   ret = hazards_GHS
-                   break
-               else:
-                   n += 1
-               time.sleep(delay)
-        else :
-            GHS_alltr = number_H.findAll('tr')
-            for tr in GHS_alltr:
-                if 'GHS Hazard Statements' in tr.text:
-                    ret = tr.text
+
+
+def get_GHS_hazards_HTML(soup, driver, bs):
+    ret = None
+    value_GHS = soup.find('section', {'id': 'GHS-Classification'})
+    if value_GHS is not None:
+        research_GHS_HTML = value_GHS.find('a', {'class': 'button has-icon-right with-padding-small lh-1'})
+        if research_GHS_HTML is not None:
+            HTML_PAGE = soup.find('meta', {'property': 'og:url'})
+            HTML_ACTUAL = HTML_PAGE.get('content')
+            take_HTML_GHS = research_GHS_HTML.get('href')
+            driver.get(HTML_ACTUAL + take_HTML_GHS)
+            retry = 100
+            delay = 1
+            n = 1
+            while n < retry:
+                html = driver.page_source
+                soup_GHS_HTML = bs(html, 'lxml')
+                value_GHS = soup_GHS_HTML.find('section', {'id': 'GHS-Classification'})
+                if value_GHS is not None:
+                    getallGHS_HTML_tr = value_GHS.findAll('tr')
+                    ret = getallGHS_HTML_tr
+                    break
+                else:
+                    n += 1
+                time.sleep(delay)
+    return ret
+
+hazards_GHS_HTML_tr = get_GHS_hazards_HTML(soup, driver, bs)
+
+def get_hazards_GHS(soup):
+    ret = ''
+    if hazards_GHS_HTML_tr is not None:
+        for tr in hazards_GHS_HTML_tr:
+            if 'GHS Hazard Statements' in tr.text:
+                ret += tr.text + ' '
+    else:
+       value_GHS = soup.find('section', {'id': 'GHS-Classification'})
+       GHS_alltr = value_GHS.findAll('tr')
+       for tr in GHS_alltr:
+          if 'GHS Hazard Statements' in tr.text:
+                ret += tr.text + ' '
+    return ret
+
+def get_Classes_hazards_HTML(soup, driver, bs):
+    ret = None
+    value_CLA = soup.find('section', {'id': 'Hazard-Classes-and-Categories'})
+    if value_CLA is not None:
+        research_CLA_HTML = value_CLA.find('a', {'class': 'button has-icon-right with-padding-small lh-1'})
+        if research_CLA_HTML is not None:
+            HTML_PAGE = soup.find('meta', {'property': 'og:url'})
+            HTML_ACTUAL = HTML_PAGE.get('content')
+            take_HTML_CLA = research_CLA_HTML.get('href')
+            driver.get(HTML_ACTUAL + take_HTML_CLA)
+            retry = 100
+            delay = 1
+            n = 1
+            while n < retry:
+                html = driver.page_source
+                soup_CLA_HTML = bs(html, 'lxml')
+                value_CLA = soup_CLA_HTML.find('section', {'id': 'Hazard-Classes-and-Categories'})
+                if value_CLA is not None:
+                    getallCLA_HTML_p = value_CLA.findAll('p')
+                    ret = getallCLA_HTML_p
+                    break
+                else:
+                    n += 1
+                time.sleep(delay)
+    return ret
+
+hazards_Classes_HTML_p = get_Classes_hazards_HTML(soup, driver, bs)
+
+def get_hazards_Classes(soup):
+    ret = ''
+    if hazards_Classes_HTML_p is not None:
+            ret += hazards_Classes_HTML_p + ' '
+    else:
+       value_CLA = soup.find('section', {'id': 'Hazard-Classes-and-Categories'})
+       CLA_allp = value_CLA.findAll('p')
+       for p in CLA_allp:
+            ret += p.text + ' '
     return ret
 
 
+def get_hazards_NFPA(soup):
+    ret = ''
+    ret1 = ''
+    ret2 = ''
+    ret3 = ''
+    value_NFPA = soup.find('section', {'id': 'NFPA-Hazard-Classification'})
+    if value_NFPA is not None:
+        NFPA_alltr = value_NFPA.findAll('tr')
+        for th in NFPA_alltr:
+            if 'NFPA Health Rating' in th.text:
+                ret1 += th.text + ' '
+                for th in NFPA_alltr:
+                     if 'NFPA Fire Rating' in th.text:
+                         ret2 += th.text + ' '
+                         for th in NFPA_alltr:
+                            if 'NFPA Instability Rating' in th.text:
+                                 ret3 += th.text + ' '
+                                 ret = ret1 + ret2 + ret3
+    return ret
 
-def get_hazards(soup, driver, bs):
-    ret = 'GHS Hazard Statements= ' + get_hazards_GHS(soup, driver, bs)
+
+def get_hazards(soup):
+    ret = 'GHS Hazard Statements: ' + get_hazards_GHS(soup) + 'Hazard Classes and Categories: ' + get_hazards_Classes(soup) + ' NFPA Hazard Classification: ' + get_hazards_NFPA(soup)
     return ret
 
 
@@ -200,5 +278,5 @@ print('Structure= ' + get_image_structure(soup))
 print('Synonyms= ' + get_synonyms(soup))
 print('Flash Point= ' + get_flash_point(soup))
 print('Properties: ' + get_properties(soup))
-print('Hazards: ' + get_hazards(soup, driver, bs))
+print('Hazards= ' + get_hazards(soup))
 
