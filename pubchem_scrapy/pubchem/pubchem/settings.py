@@ -97,7 +97,7 @@ SELENIUM_DRIVER_ARGUMENTS=['--headless']
 
 DOWNLOADER_MIDDLEWARES = {
 
-    'scrapy_selenium.SeleniumMiddleware': 800
+    'scrapy_headless.SeleniumMiddleware': 800
 
 }
 SPIDER_MIDDLEWARES = {

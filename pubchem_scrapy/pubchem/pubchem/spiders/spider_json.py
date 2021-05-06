@@ -1,7 +1,7 @@
 import scrapy
-import scra
 from scrapy_headless import SeleniumRequest
 import time
+
 
 
 class Spider(scrapy.Spider):
