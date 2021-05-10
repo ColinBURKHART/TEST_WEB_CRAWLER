@@ -12,7 +12,7 @@ Time = datetime.now()
 # element cherché
 # multiple Hazards 67-64-1
 # one hazards 57-27-2
-search_value = '67-64-1'
+search_value = '57-27-2'
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(os.environ.get('CHROME_DRIVER_PATH'), options=chrome_options)
