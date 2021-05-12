@@ -16,6 +16,9 @@ search_value = '67-64-1'
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 driver = webdriver.Chrome(os.environ.get('CHROME_DRIVER_PATH'), options=chrome_options)
+driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+
+driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.53 Safari/537.36'})
 #driver = webdriver.Firefox()
 driver.get('https://pubchem.ncbi.nlm.nih.gov/#query=' + search_value)
 
@@ -236,29 +239,36 @@ def get_hazards_GHS(soup):
                     retHS = 'GHS Hazard Statement: ' + retH
            for p in GHS_allp:
                if 'P' in p.text and '(' not in p.text:
-                   retP = 'Precautionary Statement: ' + p.text
+                   retP = ' Precautionary Statement: ' + p.text
        ret = retHS + retP
     return ret
 
+driver.quit()
+driver = webdriver.Chrome(os.environ.get('CHROME_DRIVER_PATH'), options=chrome_options)
+
 def get_Classes_hazards_HTML(soup, driver, bs):
     ret = None
-    value_CLA = soup.find('section', {'id': 'Hazard-Classes-and-Categories'})
-    if value_CLA is not None:
-        research_CLA_HTML = value_CLA.find('a', {'class': 'button has-icon-right with-padding-small lh-1'})
+    value_CLA_FP = soup.find('section', {'id': 'Hazard-Classes-and-Categories'})
+    if value_CLA_FP is not None:
+        research_CLA_HTML = value_CLA_FP.find('a', {'class': 'button has-icon-right with-padding-small lh-1'})
         if research_CLA_HTML is not None:
             HTML_PAGE = soup.find('meta', {'property': 'og:url'})
-            HTML_ACTUAL = HTML_PAGE.get('content')
-            take_HTML_CLA = research_CLA_HTML.get('href')
-            driver.get(HTML_ACTUAL + take_HTML_CLA)
-            retry = 100
+            HTML_ACTUAL_URL = HTML_PAGE.get('content')
+            take_HTML_CLA_URL = research_CLA_HTML.get('href')
+            driver.get(HTML_ACTUAL_URL + take_HTML_CLA_URL)
+            retry = 20
             delay = 1
             n = 1
             while n < retry:
                 html = driver.page_source
+                #print(html)
                 soup_CLA_HTML = bs(html, 'lxml')
+                #print(soup_CLA_HTML)
                 value_CLA = soup_CLA_HTML.find('section', {'id': 'Hazard-Classes-and-Categories'})
+                #print(value_CLA)
                 if value_CLA is not None:
                     getallCLA_HTML_p = value_CLA.findAll('p')
+
                     ret = getallCLA_HTML_p
                     break
                 else:
@@ -270,8 +280,15 @@ hazards_Classes_HTML_p = get_Classes_hazards_HTML(soup, driver, bs)
 
 def get_hazards_Classes(soup):
     ret = ''
+    retL = []
+    rethC = ''
     if hazards_Classes_HTML_p is not None:
-            ret += hazards_Classes_HTML_p + ' '
+        for p in hazards_Classes_HTML_p:
+            rethC += p.text
+            retL = rethC.split()
+            retL = list(dict.fromkeys(retL))
+            retPSC = (' '.join(retL))
+            ret += p.text + ' '
     else:
        value_CLA = soup.find('section', {'id': 'Hazard-Classes-and-Categories'})
        CLA_allp = value_CLA.findAll('p')
