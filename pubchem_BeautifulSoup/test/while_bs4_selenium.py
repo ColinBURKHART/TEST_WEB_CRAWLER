@@ -102,10 +102,16 @@ def get_image_structure(soup):
 def get_synonyms(soup):
     ret = ''
     value_Syn = soup.find('section', {'id': 'DEA-Controlled-Substances'})
-    if value_Syn is not None:
-        get_syn = value_Syn.find('div', {'class': 'section-content-item'})
-        get_synonyms = get_syn.findAll('td')
-        ret = get_synonyms[1].text
+    value_Syns = soup.find('section', {'id': 'MeSH-Entry-Terms'})
+    if value_Syns is not None:
+        get_syn = value_Syns.find('div', {'class': 'section-content-item'})
+        for p in get_syn:
+            ret += p.text + '; '
+    else :
+        if value_Syn is not None:
+            get_syn = value_Syn.find('div', {'class': 'section-content-item'})
+            get_synonyms = get_syn.findAll('td')
+            ret = get_synonyms[1].text
     return ret
 
 def get_flash_point(soup):
@@ -182,28 +188,56 @@ def get_GHS_hazards_HTML(soup, driver, bs):
                 soup_GHS_HTML = bs(html, 'lxml')
                 value_GHS = soup_GHS_HTML.find('section', {'id': 'GHS-Classification'})
                 if value_GHS is not None:
-                    getallGHS_HTML_tr = value_GHS.findAll('tr')
-                    ret = getallGHS_HTML_tr
+                    getallGHS_HTML_td = value_GHS.findAll('td')
+                    ret = getallGHS_HTML_td
                     break
                 else:
                     n += 1
                 time.sleep(delay)
     return ret
 
-hazards_GHS_HTML_tr = get_GHS_hazards_HTML(soup, driver, bs)
+hazards_GHS_HTML_td = get_GHS_hazards_HTML(soup, driver, bs)
 
 def get_hazards_GHS(soup):
     ret = ''
-    if hazards_GHS_HTML_tr is not None:
-        for tr in hazards_GHS_HTML_tr:
-            if 'GHS Hazard Statements' in tr.text:
-                ret += tr.text + ' '
+    retH = ''
+    retHS = ''
+    retGHS = ''
+    retP = ''
+    retPS = ''
+    retL = []
+    if hazards_GHS_HTML_td is not None:
+        for td in hazards_GHS_HTML_td:
+            GHS_HTML_allp = td.findAll('p')
+            for p in GHS_HTML_allp:
+                if 'H' in p.text and 'E' not in p.text and 'P' not in p.text:
+                    retH += p.text[0:4] + ' '
+                    retL = retH.split()
+                    retL = list(dict.fromkeys(retL))
+                    retGHS = (' '.join(retL))
+                    retHS = 'GHS Hazard Statement: ' + retGHS
+            for p in GHS_HTML_allp:
+                if 'P' in p.text and '(' not in p.text:
+                    retP += p.text + ' '
+                    retL = retP.split()
+                    retL = list(dict.fromkeys(retL))
+                    retPSC = (' '.join(retL))
+                    retPS = 'Precautionary Statement Codes: ' + retPSC
+        ret = retHS + retPS
+        return ret
     else:
        value_GHS = soup.find('section', {'id': 'GHS-Classification'})
-       GHS_alltr = value_GHS.findAll('tr')
-       for tr in GHS_alltr:
-          if 'GHS Hazard Statements' in tr.text:
-                ret += tr.text + ' '
+       GHS_alltd = value_GHS.findAll('td')
+       for td in GHS_alltd:
+           GHS_allp = td.findAll('p')
+           for p in GHS_allp:
+                if 'H' in p.text and 'P' not in p.text and 'E' not in p.text:
+                    retH += p.text[0:4] + ' '
+                    retHS = 'GHS Hazard Statement: ' + retH
+           for p in GHS_allp:
+               if 'P' in p.text and '(' not in p.text:
+                   retP = 'Precautionary Statement: ' + p.text
+       ret = retHS + retP
     return ret
 
 def get_Classes_hazards_HTML(soup, driver, bs):
@@ -268,7 +302,7 @@ def get_hazards_NFPA(soup):
 
 
 def get_hazards(soup):
-    ret = 'GHS Hazard Statements: ' + get_hazards_GHS(soup) + 'Hazard Classes and Categories: ' + get_hazards_Classes(soup) + ' NFPA Hazard Classification: ' + get_hazards_NFPA(soup)
+    ret = get_hazards_GHS(soup) + ' Hazard Classes and Categories: ' + get_hazards_Classes(soup) + ' NFPA Hazard Classification: ' + get_hazards_NFPA(soup)
     return ret
 
 
